@@ -3,47 +3,42 @@ const userModel = require("../models/userModel")
 
 // Requiring ObjectId from mongoose npm package
 const ObjectId = require('mongoose').Types.ObjectId;
- 
-// Validator function
-function isValidObjectId(id){
-     
-    if(ObjectId.isValid(id)){
-        if((String)(new ObjectId(id)) === id)
-            return true;       
-        return false;
+
+// Validator function for mongodb objectid 
+function isValidObjectId(id) {
+    if (ObjectId.isValid(id)) {
+        return true;
     }
-    return false;
 }
 
 
-const getDataById =async (req, res) => {
+const getDataById = async (req, res) => {
     try {
         let userId = req.params.id
-        
-console.log(userId)
 
-if(!isValidObjectId(userId)){
-  return res.send("please provide valid object id")
-}
+        if (!isValidObjectId(userId)) {
+            return res.status(400).send({ status: false, message: "please provide valid object id" })
+        }
 
-console.log(userId)
+        let allData = await userModel.findById(userId)
+        console.log(allData)
+        return res.status(200).send({ status: true, message: "data get succesfully", data: allData })
+    }
 
-    let allData = await userModel.findById(userId)
+    catch (error) {
 
-     return res.json(allData)
-    } catch (error) {
-
-        res.send(error)
+        res.status(500).send({ message: `${error.message}`, error: error })
     }
 }
 
-const getData =async (req, res) => {
+const getData = async (req, res) => {
     try {
-    let allData = await userModel.find()
+        let allData = await userModel.find()
 
-    res.send({data:allData})
-    } catch (error) {
-        res.send(error)
+        res.status(200).send({ status: true, message: "data get succesfully", data: allData })
+    }
+    catch (error) {
+      res.status(500).send({ message: `${error.message}`, error: error })
     }
 }
 
@@ -52,10 +47,10 @@ const postdata = async (req, res) => {
     try {
         let data = req.body
         let createData = await userModel.create(data)
-        res.send({ status: true, msg: "data created", data: createData })
+        res.status(201).send({ status: true, msg: "data created", data: createData })
 
     } catch (error) {
-        res.send(error)
+      res.status(500).send({ message: `${error.message}`, error: error })
 
     }
 }
@@ -66,10 +61,10 @@ const updateData = async (req, res) => {
         let data = req.body
         let userData = await userModel.findByIdAndUpdate({ _id: userId }, data, { new: true })
 
-        res.send({ data: userData })
+        res.status(200).send({status:true,message:"data updated using put succesfully", data: userData })
     } catch (error) {
-        res.status(500).send(error)
-    }
+        res.status(500).send({ message: `${error.message}`, error: error })
+}
 }
 
 
@@ -78,9 +73,9 @@ const deleteData = async (req, res) => {
         let userId = req.params.id
         let userData = await userModel.findOneAndDelete({ _id: userId })
         console.log(userData)
-        res.send({ msg: "data deleted succesfully" })
+        res.status(200).send({status:true,message:"data deleted succesfully"})
     } catch (error) {
-        res.status(500).send(error)
+        res.status(500).send({ message: `${error.message}`, error: error })
     }
 }
 
@@ -92,9 +87,9 @@ const updatePatchData = async (req, res) => {
         console.log(userId)
 
         let userData = await userModel.findByIdAndUpdate({ _id: userId }, data, { new: true })
-        res.send({ data: userData })
+        res.status(200).send({status:true,message:"data updated partially using patch succesfully",data: userData })
     } catch (error) {
-        res.status(500).send(error)
+        res.status(500).send({ message: `${error.message}`, error: error })
     }
 }
 
